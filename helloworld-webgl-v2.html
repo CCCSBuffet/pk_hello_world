@@ -1,0 +1,125 @@
+<!doctype html>
+<!--
+	CSC 400F - Fall 2017 - Carthage College - Professor Perry Kivolowitz
+	Copyright (c) 2017 Perry Kivolowitz
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+-->
+<html>
+	<head>
+		<style>
+			.center 
+			{
+				margin: auto;
+				width: 60%;
+				padding: 10px;
+				text-align: center;
+			}
+			h1
+			{	
+				font-family: verdana;
+			}
+		</style>
+</head>
+	<body>
+		<div class="center">
+			<h1>
+				CSC 400F - hello, world
+			</h1> 
+			<canvas width = "512" height = "512" id = "glcanvas">
+				Support for the canvas element is required.
+			</canvas>
+		</div>
+		<script>
+			// This program expands upon the previous by adding colors to each vertex. This is a rendering issue.
+			var canvas = document.getElementById('glcanvas');
+			var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+			var vertices = [
+				-0.5, -0.5,
+				 0.5, -0.5,
+				 0.0, 0.5
+			];
+
+			var vertex_buffer = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+			gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+			// So far all as been the same. Vertex location is an attribute of each vertex. So is color. 
+			var colors = [
+				1.0, 0.0, 0.0,
+				0.0, 1.0, 0.0,
+				0.0, 0.0, 1.0
+			];
+			var color_buffer = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+			gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+			var vertCode =
+				'attribute vec2 vertex_coordinates;' + 
+				'attribute vec3 vertex_color;' + 
+				'varying vec3 color_out;' + 
+				'void main(void)' + 
+				'{' + 
+					'gl_Position = vec4(vertex_coordinates,0.0, 1.0);' + 
+					'color_out = vertex_color;' +
+				'}';
+			var vertShader = gl.createShader(gl.VERTEX_SHADER);
+			gl.shaderSource(vertShader, vertCode);
+			gl.compileShader(vertShader);
+			//alert(gl.getShaderInfoLog(vertShader));
+
+			var fragCode = 
+				'precision mediump float;' +
+				'varying vec3 color_out;' +
+				'void main(void)' +
+				'{' + 
+					'gl_FragColor = vec4(color_out, 1.0);' + 
+				'}';
+			var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+			gl.shaderSource(fragShader, fragCode);
+			gl.compileShader(fragShader);
+			//alert(gl.getShaderInfoLog(fragShader));
+
+			var shaderProgram = gl.createProgram();
+			gl.attachShader(shaderProgram, vertShader); 
+			gl.attachShader(shaderProgram, fragShader);
+			gl.linkProgram(shaderProgram);
+
+			gl.useProgram(shaderProgram);
+
+			gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+			var coordinates = gl.getAttribLocation(shaderProgram, "vertex_coordinates");
+			gl.vertexAttribPointer(coordinates, 2, gl.FLOAT, false, 0, 0);
+			gl.enableVertexAttribArray(coordinates);
+
+			gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
+			var c = gl.getAttribLocation(shaderProgram, "vertex_color");
+			gl.vertexAttribPointer(c, 3, gl.FLOAT, false, 0, 0);
+			gl.enableVertexAttribArray(c);
+
+			gl.clearColor(0.1, 0.1, 0.1, 1.0);
+			gl.clear(gl.COLOR_BUFFER_BIT);
+			gl.viewport(0,0,canvas.width,canvas.height);
+			gl.drawArrays(gl.TRIANGLES, 0, 3);
+			
+		</script>
+	</body>
+</html>

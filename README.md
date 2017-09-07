@@ -1,6 +1,13 @@
-# HelloWorld
+# Hello World examples
 
-This repo contains a number of successively more sophisticated single triangles.
+These programs are a staged introduction to webgl. They are several levels of hello world-like material.
 
-Beginning with an empty HTML page and building up through a spinning colored triangle in perspective, the programs are commented and explicated to some degree.
+1. A single untransformed triangle with constant color.
 
+2. As above with colored vertices.
+
+3. As above with modelview and projection matrices added.
+
+4. As above with animation added.
+
+5. Same as above with html5 canvas-based text composited over the top.
