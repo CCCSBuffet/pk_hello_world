@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+	<head>
+		<style>	
+			h1
+			{	
+				font-family: verdana;
+			}
+	
+			.container {
+				position: relative;
+			}
+
+			#textcanvas {
+				position: absolute;
+				left: 0px;
+				top: 0px;
+				z-index: 10;
+			}
+		</style>
+</head>
+	<body>
+		<div class="container">
+			<!-- The 3d and 2d canvases are meant to overlap -->
+			<canvas width = "512" height = "512" id = "glcanvas">
+				Support for the canvas element is required.
+			</canvas>
+			<canvas width = "512" height = "512" id = "textcanvas">
+			</canvas>
+		</div>
+		<script src='gl-matrix-min.js'></script>
+		<script src='helloworld-shaders.js'></script>
+		
+		<script>
+			function Radians(angle_in_degrees) 
+			{
+				return angle_in_degrees * (Math.PI / 180);
+			}
+
+			// The 2d canvas contains static text and therefore, can be
+			// rendered once. The two canvases are logically distinct and
+			// composited for us. As such, what ever goes on below the the
+			// 2d canvas has no effect upon it.
+			var textCanvas = document.getElementById("textcanvas");
+			var ctx = textCanvas.getContext("2d");
+			ctx.font = "36px verdana, sans-serif ";
+			ctx.textAlign = "center";
+			ctx.textBaseline = "center";
+			ctx.fillStyle = "#ffffff";
+			ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+			ctx.fillText("CSC 400F - hello, world", ctx.canvas.width / 2.0, ctx.canvas.height / 2.0);
+
+			var canvas = document.getElementById('glcanvas');
+			var gl = canvas.getContext('webgl2')
+			var vertices = [
+				-0.5, -0.5,
+				 0.5, -0.5,
+				 0.0, 0.5
+			];
+
+			var colors = [
+				1.0, 0.0, 0.0,
+				0.0, 1.0, 0.0,
+				0.0, 0.0, 1.0
+			];
+
+			var vertex_buffer = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+			gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+			var color_buffer = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+			gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+
+			var vertShader = gl.createShader(gl.VERTEX_SHADER);
+			gl.shaderSource(vertShader, vertCode);
+			gl.compileShader(vertShader);
+			var success = gl.getShaderParameter(vertShader, gl.COMPILE_STATUS);
+			if (!success)
+				throw "Could not compile vertex shader:" + gl.getShaderInfoLog(vertShader);
+	
+			var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+			gl.shaderSource(fragShader, fragCode);
+			gl.compileShader(fragShader);
+			success = gl.getShaderParameter(fragShader, gl.COMPILE_STATUS);
+			if (!success)
+				throw "Could not compile fragment shader:" + gl.getShaderInfoLog(fragShader);
+	
+			var shaderProgram = gl.createProgram();
+			gl.attachShader(shaderProgram, vertShader); 
+			gl.attachShader(shaderProgram, fragShader);
+			gl.linkProgram(shaderProgram);
+
+			gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+			var coordinates = gl.getAttribLocation(shaderProgram, "vertex_coordinates");
+			gl.vertexAttribPointer(coordinates, 2, gl.FLOAT, false, 0, 0);
+			gl.enableVertexAttribArray(coordinates);
+
+			gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
+			var c = gl.getAttribLocation(shaderProgram, "vertex_color");
+			gl.vertexAttribPointer(c, 3, gl.FLOAT, false, 0, 0);
+			gl.enableVertexAttribArray(c);
+
+			var prj = mat4.create();
+			mat4.perspective(prj, Radians(50.0), 1.0, 0.5, 10.0);
+
+			gl.useProgram(shaderProgram);
+			var mdv_matrix_handle = gl.getUniformLocation(shaderProgram, "modelview_matrix");
+			var prj_matrix_handle = gl.getUniformLocation(shaderProgram, "projection_matrix");
+			gl.useProgram(null);
+
+			function Draw(now)
+			{
+				// now is delivered in milliseconds. This converts it to seconds.
+				now = now / 1000.0;
+
+				gl.clearColor(0.1, 0.1, 0.1, 1.0);
+				gl.clear(gl.COLOR_BUFFER_BIT);
+				gl.viewport(0,0,canvas.width,canvas.height);
+
+				var mdv = mat4.create();
+				mat4.lookAt(mdv, [1.0, 1.0, 1.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0]);
+				mat4.rotate(mdv, mdv, Radians(now * 30.0), [0.0, 1.0, 0.0]);
+
+				gl.useProgram(shaderProgram);
+				gl.uniformMatrix4fv(mdv_matrix_handle, false, mdv);
+				gl.uniformMatrix4fv(prj_matrix_handle, false, prj);				
+				gl.drawArrays(gl.TRIANGLES, 0, 3);
+				gl.useProgram(null);
+
+				requestAnimationFrame(Draw);
+			}
+
+			requestAnimationFrame(Draw);
+		</script>
+	</body>
+</html>
