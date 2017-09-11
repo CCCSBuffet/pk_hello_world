@@ -95,15 +95,15 @@
 			gl.linkProgram(shaderProgram);
 
 			gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
-			var coordinates = gl.getAttribLocation(shaderProgram, "vertex_coordinates");
-			gl.vertexAttribPointer(coordinates, 2, gl.FLOAT, false, 0, 0);
-			gl.enableVertexAttribArray(coordinates);
+			var vertex_coordinates_handle = gl.getAttribLocation(shaderProgram, "vertex_coordinates");
+			gl.vertexAttribPointer(vertex_coordinates_handle, 2, gl.FLOAT, false, 0, 0);
 
 			gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
-			var c = gl.getAttribLocation(shaderProgram, "vertex_color");
-			gl.vertexAttribPointer(c, 3, gl.FLOAT, false, 0, 0);
-			gl.enableVertexAttribArray(c);
+			var vertex_color_handle = gl.getAttribLocation(shaderProgram, "vertex_color");
+			gl.vertexAttribPointer(vertex_color_handle, 3, gl.FLOAT, false, 0, 0);
 
+			gl.bindBuffer(gl.ARRAY_BUFFER, null);
+		
 			var prj = mat4.create();
 			mat4.perspective(prj, Radians(50.0), 1.0, 0.5, 10.0);
 
@@ -117,7 +117,7 @@
 				// now is delivered in milliseconds. This converts it to seconds.
 				now = now / 1000.0;
 
-				gl.clearColor(0.1, 0.1, 0.1, 1.0);
+				gl.clearColor(0.5, 0.5, 0.5, 1.0);
 				gl.clear(gl.COLOR_BUFFER_BIT);
 				gl.viewport(0,0,canvas.width,canvas.height);
 
@@ -125,11 +125,15 @@
 				mat4.lookAt(mdv, [1.0, 1.0, 1.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0]);
 				mat4.rotate(mdv, mdv, Radians(now * 30.0), [0.0, 1.0, 0.0]);
 
+				gl.enableVertexAttribArray(vertex_color_handle);
+				gl.enableVertexAttribArray(vertex_coordinates_handle);
 				gl.useProgram(shaderProgram);
 				gl.uniformMatrix4fv(mdv_matrix_handle, false, mdv);
 				gl.uniformMatrix4fv(prj_matrix_handle, false, prj);				
 				gl.drawArrays(gl.TRIANGLES, 0, 3);
 				gl.useProgram(null);
+				gl.disableVertexAttribArray(vertex_color_handle);
+				gl.disableVertexAttribArray(vertex_coordinates_handle);
 
 				requestAnimationFrame(Draw);
 			}
