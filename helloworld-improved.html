@@ -107,10 +107,8 @@
 			var prj = mat4.create();
 			mat4.perspective(prj, Radians(50.0), 1.0, 0.5, 10.0);
 
-			gl.useProgram(shaderProgram);
 			var mdv_matrix_handle = gl.getUniformLocation(shaderProgram, "modelview_matrix");
 			var prj_matrix_handle = gl.getUniformLocation(shaderProgram, "projection_matrix");
-			gl.useProgram(null);
 
 			function Draw(now)
 			{
