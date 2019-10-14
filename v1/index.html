@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+	</head>
+	<body>
+		<div>
+			<canvas width = "512" height = "512" id = "glcanvas">
+				Support for the canvas element is required.
+			</canvas>
+		</div>
+		<script src='./gl-matrix-min.js'></script>
+		<script src='./shaders.js'></script>
+		<script src='./solid_shader.js'></script>
+		<script src='./triangle.js'></script>
+		<script>
+			var canvas = document.getElementById('glcanvas');
+			var gl = canvas.getContext('webgl2');
+			var y_axis = vec3.fromValues(0, 1, 0);
+			var near_plane = 1;
+			var far_plane = 50;
+
+			if (!gl) {
+				throw new Error('WebGL 2 not available.');
+			}
+
+			var solid_shader = new Shader('Solid Shader', solid_vertex_shader, solid_fragment_shader);
+			var triangle = new Triangle(solid_shader);
+
+			function Radians(degrees) {
+				return degrees / 180 * Math.PI;
+			}
+
+			function DrawScene(now) {
+				now = now / 1000;
+				let projection_matrix = mat4.create();
+				let modelview_matrix = mat4.create();
+				gl.clearColor(0.1, 0.1, 0.1, 1.0);
+				gl.clear(gl.COLOR_BUFFER_BIT);
+				gl.viewport(0, 0, canvas.width, canvas.height);
+				mat4.lookAt(modelview_matrix, vec3.fromValues(0.0, 0.0, 10.0), vec3.fromValues(0.0, 0.0, 0.0), y_axis);
+				mat4.perspective(projection_matrix, Radians(30.0), canvas.width / canvas.height, near_plane, far_plane);
+		
+				shader.UseProgram();
+				shader.EndProgram();
+				requestAnimationFrame(DrawScene);
+			}
+
+			requestAnimationFrame(DrawScene);
+
+		</script>
+	</body>
+</html>

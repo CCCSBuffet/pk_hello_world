@@ -2,6 +2,8 @@
 
 These programs are a staged introduction to webgl. They are several levels of hello world-like material.
 
+The repo begins with WebGL 1. Later all of these are converted to WebGL 2 and code quality / practices are cleaned up.
+
 1. A single untransformed triangle with constant color.
 
 2. As above with colored vertices.
