@@ -2,7 +2,7 @@
 	<head>
 		<meta charset="UTF-8">
 	</head>
-	<body>
+	<body style="background-color: #404040;">
 		<!--	Fairly minimalist but complete demonstration of WebGL 2 Hello World
 				Perry Kivolowitz - Carthage College Computer Science Department
 		-->
@@ -40,18 +40,15 @@
 			
 			'use strict';
 
-			function Radians(angle_in_degrees) 
-			{
+			function Radians(angle_in_degrees) {
 				return angle_in_degrees * (Math.PI / 180);
 			}
 
-			function Degrees(angle_in_radians)
-			{
+			function Degrees(angle_in_radians) {
 				return angle_in_radians / Math.PI  * 180;
 			}
 
-			function CreateShader(vrtx_id, frag_id)
-			{
+			function CreateShader(vrtx_id, frag_id) {
 				if (!vrtx_id)
 					throw "Parameter 1 to CreateShader may be missing.";
 
@@ -96,22 +93,21 @@
 			}
 
 			function InitializeShader() {
-				solid_shader.program = CreateShader("vertex_shader", "fragment_shader");
-				console.log('Program: ' + solid_shader.program);
-				gl.useProgram(solid_shader.program);
-				solid_shader.a_vertex_coordinates = gl.getAttribLocation(solid_shader.program, "a_vertex_coordinates");
-				solid_shader.a_colors = gl.getAttribLocation(solid_shader.program, "a_colors");
-				solid_shader.u_mv = gl.getUniformLocation(solid_shader.program, "u_mv");
-				solid_shader.u_pj = gl.getUniformLocation(solid_shader.program, "u_pj");
+				color_shader.program = CreateShader("vertex_shader", "fragment_shader");
+				console.log('Program: ' + color_shader.program);
+				gl.useProgram(color_shader.program);
+				color_shader.a_vertex_coordinates = gl.getAttribLocation(color_shader.program, "a_vertex_coordinates");
+				color_shader.a_colors = gl.getAttribLocation(color_shader.program, "a_colors");
+				color_shader.u_mv = gl.getUniformLocation(color_shader.program, "u_mv");
+				color_shader.u_pj = gl.getUniformLocation(color_shader.program, "u_pj");
 				gl.useProgram(null);
-				console.log('Vertex Coordinate handle: ' + solid_shader.a_vertex_coordinates);
-				console.log('Color attribute handle: ' + solid_shader.a_colors);
-				console.log('MV Matrix handle: ' + solid_shader.u_mv);
-				console.log('PJ Matrix handle: ' + solid_shader.u_pj);
+				console.log('Vertex Coordinate handle: ' + color_shader.a_vertex_coordinates);
+				console.log('Color attribute handle: ' + color_shader.a_colors);
+				console.log('MV Matrix handle: ' + color_shader.u_mv);
+				console.log('PJ Matrix handle: ' + color_shader.u_pj);
 			}
 
-			function InitializeTriangle()
-			{
+			function InitializeTriangle() {
 				triangle.vao = gl.createVertexArray();
 				triangle.vrts_buffer = gl.createBuffer();
 				triangle.indx_buffer = gl.createBuffer();
@@ -132,13 +128,13 @@
 
 				gl.bindVertexArray(triangle.vao);
 				gl.bindBuffer(gl.ARRAY_BUFFER, triangle.vrts_buffer);
-				gl.vertexAttribPointer(solid_shader.a_vertex_coordinates, 3, gl.FLOAT, false, 0, 0);
-				gl.enableVertexAttribArray(solid_shader.a_vertex_coordinates);
+				gl.vertexAttribPointer(color_shader.a_vertex_coordinates, 3, gl.FLOAT, false, 0, 0);
+				gl.enableVertexAttribArray(color_shader.a_vertex_coordinates);
 				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(triangle.vrts), gl.STATIC_DRAW);
 
 				gl.bindBuffer(gl.ARRAY_BUFFER, triangle.colr_buffer);
-				gl.vertexAttribPointer(solid_shader.a_colors, 3, gl.FLOAT, false, 0, 0);
-				gl.enableVertexAttribArray(solid_shader.a_colors);
+				gl.vertexAttribPointer(color_shader.a_colors, 3, gl.FLOAT, false, 0, 0);
+				gl.enableVertexAttribArray(color_shader.a_colors);
 				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(triangle.colors), gl.STATIC_DRAW);
 
 				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, triangle.indx_buffer);
@@ -156,8 +152,7 @@
 				console.log('VAO: ' + triangle.vao);
 			}
 
-			function ProjectText(P, mvp, ctx, text)
-			{
+			function ProjectText(P, mvp, ctx, text) {
 				let p = vec4.clone(P);
 				vec4.transformMat4(p, p, mvp);
 				p[0] /= p[3];
@@ -171,14 +166,6 @@
 				*/
 
 				now /= 1000;
-
-				/*	Place title.
-				*/
-				
-				ct.clearRect(0, 0, ct.canvas.width, ct.canvas.height);
-				ct.font = "32px Helvetica";
-				ct.fillStyle = "#404040";
-				ct.fillText("Hello World", 20, 50);
 				
 				/*	Initialize gl drawing area.
 				*/
@@ -197,9 +184,9 @@
 				mat4.rotate(modelview_matrix, modelview_matrix, now, z_axis);
 				mat4.rotate(modelview_matrix, modelview_matrix, now, x_axis);
 				
-				gl.useProgram(solid_shader.program);
-				gl.uniformMatrix4fv(solid_shader.u_mv, false, modelview_matrix);
-				gl.uniformMatrix4fv(solid_shader.u_pj, false, projection_matrix);
+				gl.useProgram(color_shader.program);
+				gl.uniformMatrix4fv(color_shader.u_mv, false, modelview_matrix);
+				gl.uniformMatrix4fv(color_shader.u_pj, false, projection_matrix);
 				
 				gl.bindVertexArray(triangle.vao);
 				gl.drawElements(gl.TRIANGLES, 3, gl.UNSIGNED_SHORT, 0);
@@ -224,12 +211,15 @@
 			var txcanvas = document.getElementById("txcanvas");
 			var gl = glcanvas.getContext('webgl2');
 			var ct = txcanvas.getContext("2d");
-			var solid_shader = {};
+			var color_shader = {};
 			var triangle = {};
 
 			ct.textAlign = "left";
 			ct.textBaseline = "bottom";
-			ct.fillStyle = "#ffffff";
+			ct.clearRect(0, 0, ct.canvas.width, ct.canvas.height);
+			ct.font = "32px Helvetica";
+			ct.fillStyle = "#404040";
+			ct.fillText("Hello World", 20, 50);
 
 			InitializeShader();
 			InitializeTriangle();
